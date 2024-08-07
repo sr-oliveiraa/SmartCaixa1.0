@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartCaixa - Fechamento</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styleFechamento.css') }}">
+</head>
+<body>
+    <header>
+        <h1>SmartCaixa - Fechamento</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('pdv') }}">PDV</a></li>
+            <li><a href="{{ url_for('categorias') }}">Categorias</a></li>
+            <li><a href="{{ url_for('produtos') }}">Produtos</a></li>
+            <li><a href="{{ url_for('transacoes') }}">Transações</a></li>
+            <li><a href="{{ url_for('fechamento') }}">Fechamento</a></li>
+            <li><a href="{{ url_for('configuracoes') }}">Configurações</a></li>
+            <li><a href="{{ url_for('logout') }}">Sair</a></li>
+        </ul>
+    </nav>
+    <div class="fechamento-container">
+        <h2>Fechamento do Caixa</h2>
+        <form method="post" action="{{ url_for('fechamento') }}">
+            <label for="abertura">Data e Hora de Abertura:</label>
+            <input type="datetime-local" id="abertura" name="abertura" required>
+            <button type="submit">Finalizar Fechamento</button>
+        </form>
+        {% if fechamento %}
+        <div>
+            <h3>Resumo do Fechamento</h3>
+            <p><strong>Data e Hora de Abertura:</strong> {{ fechamento.abertura }}</p>
+            <p><strong>Data e Hora de Fechamento:</strong> {{ fechamento.fechamento }}</p>
+            <p><strong>Total PIX:</strong> R$ {{ fechamento.total_pix }}</p>
+            <p><strong>Total Débito:</strong> R$ {{ fechamento.total_debito }}</p>
+            <p><strong>Total Crédito:</strong> R$ {{ fechamento.total_credito }}</p>
+            <p><strong>Total Dinheiro:</strong> R$ {{ fechamento.total_dinheiro }}</p>
+            <p><strong>Usuário:</strong> {{ fechamento.usuario.usuario }}</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

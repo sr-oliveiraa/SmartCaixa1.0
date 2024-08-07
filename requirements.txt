@@ -1,0 +1,4 @@
+Flask==2.3.2
+Flask-SQLAlchemy==3.0.1
+Werkzeug==2.3.3
+FPDF==1.7.2

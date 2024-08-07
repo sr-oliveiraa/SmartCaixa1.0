@@ -1,0 +1,107 @@
+/* style.css */
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #333;
+    color: #fff;
+    padding: 10px 20px;
+    text-align: center;
+}
+
+nav {
+    background-color: #444;
+    color: #fff;
+    padding: 10px 20px;
+}
+
+nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+}
+
+nav ul li {
+    margin: 0 10px;
+}
+
+nav ul li a {
+    color: #fff;
+    text-decoration: none;
+}
+
+nav ul li a:hover {
+    text-decoration: underline;
+}
+
+.fechamento-container {
+    margin: 20px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1, h2 {
+    margin: 0;
+    padding: 0;
+}
+
+h2 {
+    margin-bottom: 20px;
+}
+
+#detalhes-fechamento {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+#detalhes-fechamento thead {
+    background-color: #333;
+    color: #fff;
+}
+
+#detalhes-fechamento th, #detalhes-fechamento td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+#detalhes-fechamento tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+#detalhes-fechamento tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+button#gerar-pdf {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 10px 0;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+button#gerar-pdf:hover {
+    background-color: #45a049;
+}
+
+p {
+    font-size: 16px;
+    margin: 10px 0;
+}

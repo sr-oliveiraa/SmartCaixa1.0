@@ -1,0 +1,85 @@
+/* Estilização básica */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+header {
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+    text-align: center;
+}
+
+nav {
+    background-color: #f4f4f4;
+    padding: 10px;
+}
+
+nav ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+nav ul li {
+    display: inline;
+    margin-right: 10px;
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: #333;
+}
+
+.transacoes-container {
+    padding: 20px;
+}
+
+.filter-form {
+    margin-bottom: 20px;
+}
+
+.filter-form label {
+    margin-right: 10px;
+}
+
+.total-sum {
+    font-size: 1.2em;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+#transacoes-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+#transacoes-table th, #transacoes-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+#transacoes-table th {
+    background-color: #f4f4f4;
+}
+
+.pagination {
+    margin-top: 20px;
+}
+
+.pagination a {
+    text-decoration: none;
+    color: #007bff;
+    margin-right: 10px;
+}
+
+.pagination a:hover {
+    text-decoration: underline;
+}
+
+.pagination span {
+    margin: 0 10px;
+}
