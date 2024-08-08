@@ -334,5 +334,8 @@ def gerar_pdf(resumo):
     # Função fictícia para gerar PDF
     pass
 
-if __name__ == '__main__':
-    app.run(debug=True)
+from app import app  
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=13400, debug=True)
+
