@@ -164,23 +164,48 @@ def add_produto():
 def edit_produto(produto_id):
     if 'usuario' not in session:
         return redirect(url_for('index'))
-    produto = Produto.query.get_or_404(produto_id)
-    produto.nome = request.form.get('nome_produto')
-    produto.descricao = request.form.get('descricao_produto')
-    produto.codigo_barras = request.form.get('codigo_barras')
-    produto.preco = request.form.get('preco_produto')
-    produto.estoque = request.form.get('estoque_produto')
-    produto.categoria_id = request.form.get('categoria_id')
     
-    imagem_produto = request.files['imagem_produto']
-    if imagem_produto:
+    produto = Produto.query.get_or_404(produto_id)
+    
+    # Obtendo valores do formulário e garantindo que não sejam None
+    nome_produto = request.form.get('nome_produto')
+    descricao_produto = request.form.get('descricao_produto')
+    codigo_barras = request.form.get('codigo_barras')
+    preco_produto = request.form.get('preco_produto')
+    estoque_produto = request.form.get('estoque_produto')
+    categoria_id = request.form.get('categoria_id')
+    
+    # Verificando se os valores não são vazios
+    if nome_produto:
+        produto.nome = nome_produto
+    if descricao_produto:
+        produto.descricao = descricao_produto
+    if codigo_barras:
+        produto.codigo_barras = codigo_barras
+    if preco_produto:
+        produto.preco = preco_produto
+    if estoque_produto:
+        produto.estoque = estoque_produto
+    if categoria_id:
+        produto.categoria_id = categoria_id
+    
+    imagem_produto = request.files.get('imagem_produto')
+    if imagem_produto and imagem_produto.filename:
         imagem_filename = secure_filename(imagem_produto.filename)
         imagem_produto.save(os.path.join(app.config['UPLOAD_FOLDER'], imagem_filename))
         produto.imagem = imagem_filename
-    
-    db.session.commit()
+
+    try:
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        # Adicione um log ou um tratamento de erro aqui se necessário
+        print(f"Erro ao atualizar o produto: {e}")
+        return redirect(url_for('produtos', error="Erro ao atualizar o produto"))
     
     return redirect(url_for('produtos'))
+
+
 
 @app.route('/transacoes')
 def transacoes():

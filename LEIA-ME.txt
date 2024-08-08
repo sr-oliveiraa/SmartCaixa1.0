@@ -1,0 +1,72 @@
+  ####    ##  ##   ##  ##    ####     ####    ####
+ ##  ##   ##  ##   ### ##   ##  ##   ##  ##   ## ##
+ ##       ##  ##   ######   ##       ##  ##   ##  ##
+ ## ###    ####    ######   ##       ##  ##   ##  ##
+ ##  ##     ##     ## ###   ##       ##  ##   ##  ##
+ ##  ##     ##     ##  ##   ##  ##   ##  ##   ## ##
+  ####      ##     ##  ##    ####     ####    ####
+
+
+
+
+LEIA-ME
+Instruções para Configuração do Ambiente e Empacotamento da Aplicação
+1. Instalação do Python no Windows
+Download do Python:
+
+Acesse o site oficial do Python: https://www.python.org/downloads/.
+Clique em "Download Python 3.x.x" (a versão mais recente).
+Após o download, execute o instalador.
+Instalação do Python:
+
+Durante a instalação, marque a opção "Add Python to PATH".
+Escolha "Install Now" ou "Customize installation" para ajustar as configurações conforme necessário.
+Aguarde a conclusão da instalação.
+Verificação da Instalação:
+
+Abra o Prompt de Comando (Cmd).
+Digite python --version e pressione Enter.
+Se a instalação foi bem-sucedida, a versão do Python será exibida.
+2. Instalação das Dependências
+Obtenha o Projeto:
+
+Certifique-se de que todos os arquivos do projeto estejam na mesma pasta no seu computador.
+Instalação do pip:
+
+O pip geralmente é instalado automaticamente com o Python. Verifique digitando pip --version no Prompt de Comando.
+Se o pip não estiver instalado, siga as instruções no site oficial do Python: https://pip.pypa.io/en/stable/installation/.
+Instalação das Dependências:
+
+Navegue até a pasta do projeto no Prompt de Comando usando o comando cd:
+sh
+Copiar código
+cd caminho/para/a/pasta/do/projeto
+Execute o comando abaixo para instalar todas as bibliotecas listadas no arquivo requirements.txt:
+sh
+Copiar código
+pip install -r requirements.txt
+3. Empacotamento da Aplicação com PyInstaller
+Verifique o Ícone:
+
+Tenha um ícone (.ico) preparado na pasta do projeto ou em um local acessível. Se você não possui um ícone, poderá usar qualquer imagem .ico.
+Criar o Executável:
+
+Com todas as dependências instaladas, você pode criar o executável para a aplicação. No Prompt de Comando, execute:
+sh
+Copiar código
+pyinstaller --onefile --icon=caminho/para/icone.ico main.py
+Substitua caminho/para/icone.ico pelo caminho do arquivo de ícone que deseja usar.
+Localização do Executável:
+
+O executável será gerado na pasta dist dentro do diretório do projeto.
+Navegue até dist, onde você encontrará o arquivo .exe pronto para ser executado no Windows.
+Distribuição:
+
+Você pode distribuir o arquivo .exe gerado diretamente para os usuários, sem a necessidade de instalar o Python ou as bibliotecas novamente.
+4. Suporte e Contato
+Se precisar de assistência adicional, entre em contato com:
+Programador: Gustavo Oliveira
+Empresa: GynCod
+
+
+
