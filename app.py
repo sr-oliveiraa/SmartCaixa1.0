@@ -2,6 +2,7 @@ from datetime import datetime
 from datetime import datetime, date, timedelta
 import io
 from flask import Flask, jsonify, render_template, request, redirect, send_file, url_for, session
+from flask_login import LoginManager, current_user, login_required, login_user, logout_user
 from models import FechamentoCaixa, Transacao, db, Usuario, Categoria, Produto, ItemTransacao
 
 from utils import gerar_pdf
@@ -15,6 +16,15 @@ app.config['SECRET_KEY'] = 'Ayce'
 app.config['UPLOAD_FOLDER'] = 'static/imagens'
 db.init_app(app)
 
+# Configurar Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'index'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return Usuario.query.get(int(user_id))
+
 @app.route('/')
 def index():
     if 'usuario' in session:
@@ -27,19 +37,21 @@ def login():
     senha = request.form['senha']
     user = Usuario.query.filter_by(usuario=usuario).first()
     if user and check_password_hash(user.senha, senha):
+        login_user(user)
         session['usuario'] = usuario
         return redirect(url_for('pdv'))
     return 'Usuário ou senha inválidos', 401
 
 @app.route('/logout')
+@login_required
 def logout():
+    logout_user()
     session.pop('usuario', None)
     return redirect(url_for('index'))
 
 @app.route('/pdv')
+@login_required
 def pdv():
-    if 'usuario' not in session:
-        return redirect(url_for('index'))
     return render_template('pdv.html')
 
 @app.route('/finalizar_compra', methods=['POST'])
@@ -71,7 +83,7 @@ def finalizar_compra():
             db.session.add(produto)
     
     nova_transacao = Transacao(
-        data=datetime.datetime.now(),
+        data=datetime.now(),
         valor=total,
         metodo_pagamento=pagamento
     )
@@ -268,21 +280,34 @@ def fechamento():
 
 @app.route('/configuracoes')
 def configuracoes():
-    if 'usuario' not in session:
-        return redirect(url_for('index'))
-    usuarios = Usuario.query.all()
-    return render_template('configuracoes.html', usuarios=usuarios)
+    if current_user.is_admin:
+        usuarios = Usuario.query.all()
+        return render_template('configuracoes.html', usuarios=usuarios)
+    return redirect(url_for('pdv'))
 
 @app.route('/add_usuario', methods=['POST'])
 def add_usuario():
-    if 'usuario' not in session:
-        return redirect(url_for('index'))
     usuario = request.form['usuario']
-    senha = generate_password_hash(request.form['senha'])
+    senha = request.form['senha']
     nivel_acesso = request.form['nivel_acesso']
-    novo_usuario = Usuario(usuario=usuario, senha=senha, nivel_acesso=nivel_acesso)
+    
+    senha_hash = generate_password_hash(senha)
+    novo_usuario = Usuario(usuario=usuario, senha=senha_hash, nivel_acesso=nivel_acesso)
     db.session.add(novo_usuario)
     db.session.commit()
+    
+    return redirect(url_for('configuracoes'))
+
+# Adicione uma rota para deletar um usuário
+@app.route('/delete_usuario', methods=['POST'])
+def delete_usuario():
+    usuario_id = request.form['usuario_id']
+    usuario = Usuario.query.get(usuario_id)
+    
+    if usuario:
+        db.session.delete(usuario)
+        db.session.commit()
+    
     return redirect(url_for('configuracoes'))
 
 @app.route('/gerar_relatorio', methods=['POST'])

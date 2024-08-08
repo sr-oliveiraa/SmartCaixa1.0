@@ -1,13 +1,19 @@
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin
 from datetime import datetime
 
 db = SQLAlchemy()
 
-class Usuario(db.Model):
+class Usuario(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     usuario = db.Column(db.String(80), unique=True, nullable=False)
     senha = db.Column(db.String(120), nullable=False)
     nivel_acesso = db.Column(db.String(20))
+    is_admin = db.Column(db.Boolean, default=False)  # Adiciona o atributo is_admin
+
+    def get_id(self):
+        return str(self.id)
+    # Métodos necessários do UserMixin já estão implementados, então não é necessário sobrescrevê-los.
 
 class Categoria(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -23,7 +29,6 @@ class Produto(db.Model):
     estoque = db.Column(db.Integer, nullable=False)
     imagem = db.Column(db.String(100))
     categoria_id = db.Column(db.Integer, db.ForeignKey('categoria.id'), nullable=False)
-
 
     def atualizar_estoque(self, quantidade_vendida):
         if quantidade_vendida > self.estoque:
@@ -69,3 +74,13 @@ class FechamentoCaixa(db.Model):
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
     usuario = db.relationship('Usuario', backref='fechamentos')
 
+class Empresa(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), nullable=False)
+    endereco = db.Column(db.String(200), nullable=False)
+    telefone = db.Column(db.String(20), nullable=False)
+
+    def __init__(self, nome, endereco, telefone):
+        self.nome = nome
+        self.endereco = endereco
+        self.telefone = telefone
