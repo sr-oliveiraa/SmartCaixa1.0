@@ -84,3 +84,9 @@ class Empresa(db.Model):
         self.nome = nome
         self.endereco = endereco
         self.telefone = telefone
+
+class Atividade(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    data = db.Column(db.DateTime, default=datetime.utcnow)
+    usuario = db.Column(db.String(150))
+    acao = db.Column(db.String(255))
