@@ -179,7 +179,9 @@
             {% endif %}
         </div>
         {% endif %}
-        <button id="gerar-relatorio">Gerar Relatório PDF</button>
+        <form method="post" action="{{ url_for('gerar_relatorio') }}">
+            <button type="submit">Gerar Relatório</button>
+        </form>
     </div>
 </body>
 </html>

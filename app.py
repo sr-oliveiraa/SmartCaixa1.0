@@ -1,8 +1,8 @@
-from datetime import datetime
 from datetime import datetime, date, timedelta
 import io
 from flask import Flask, jsonify, render_template, request, redirect, send_file, url_for, session
 from flask_login import LoginManager, current_user, login_required, login_user, logout_user
+from fpdf import FPDF
 from models import FechamentoCaixa, Transacao, db, Usuario, Categoria, Produto, ItemTransacao
 
 from utils import gerar_pdf
@@ -335,14 +335,44 @@ def delete_usuario():
     
     return redirect(url_for('configuracoes'))
 
+
+
 @app.route('/gerar_relatorio', methods=['POST'])
 def gerar_relatorio():
     if 'usuario' not in session:
         return redirect(url_for('index'))
+    
+    # Obtém todas as transações
     transacoes = Transacao.query.all()
+    
+    # Prepara o resumo das transações
     resumo = [f"{t.data} - {t.valor} - {t.metodo_pagamento}" for t in transacoes]
-    gerar_pdf(resumo)
-    return redirect(url_for('fechamento'))
+    
+    # Gera o PDF e obtém o conteúdo em memória
+    pdf_content = gerar_pdf(resumo)
+    
+    # Envia o PDF como resposta para download
+    return send_file(
+        pdf_content,
+        as_attachment=True,
+        download_name='relatorio_transacoes.pdf',
+        mimetype='application/pdf'
+    )
+
+def gerar_pdf(dados):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+
+    for dado in dados:
+        pdf.cell(200, 10, txt=dado, ln=True)
+
+    # Salva o PDF em memória como string
+    pdf_output = io.BytesIO()
+    pdf_output.write(pdf.output(dest='S').encode('latin1'))  # 'S' para retornar como string
+    pdf_output.seek(0)  # Volta para o início do buffer
+
+    return pdf_output
 
 @app.route('/search_produto', methods=['GET'])
 def search_produto():
@@ -355,12 +385,45 @@ def search_produto():
     produtos_list = [{'id': p.id, 'nome': p.nome, 'descricao': p.descricao, 'codigo_barras': p.codigo_barras, 'preco': p.preco, 'estoque': p.estoque} for p in produtos]
     return jsonify(produtos_list)
 
-def gerar_pdf(resumo):
-    # Função fictícia para gerar PDF
-    pass
+
+
+@app.route('/gerar_pdf_fechamento', methods=['POST'])
+@login_required
+def gerar_pdf_fechamento():
+    if 'usuario' not in session:
+        return redirect(url_for('index'))
+    
+    # Obtém dados do fechamento do formulário
+    abertura = request.form.get('abertura')
+    fechamento = request.form.get('fechamento')
+    total_pix = float(request.form.get('total_pix', 0))
+    total_debito = float(request.form.get('total_debito', 0))
+    total_credito = float(request.form.get('total_credito', 0))
+    total_dinheiro = float(request.form.get('total_dinheiro', 0))
+
+    # Prepara o conteúdo do PDF
+    dados = [
+        f"Data e Hora de Abertura: {abertura}",
+        f"Data e Hora de Fechamento: {fechamento}",
+        f"Total PIX: R$ {total_pix:.2f}",
+        f"Total Débito: R$ {total_debito:.2f}",
+        f"Total Crédito: R$ {total_credito:.2f}",
+        f"Total Dinheiro: R$ {total_dinheiro:.2f}",
+    ]
+
+    # Gera o PDF e obtém o conteúdo em memória
+    pdf_content = gerar_pdf(dados)
+    
+    # Envia o PDF como resposta para download
+    return send_file(
+        pdf_content,
+        as_attachment=True,
+        download_name='relatorio_fechamento.pdf',
+        mimetype='application/pdf'
+    )
+
 
 from app import app  
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=13400, debug=True)
-

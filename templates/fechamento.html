@@ -6,12 +6,10 @@
     <title>SmartCaixa - Fechamento</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styleFechamento.css') }}">
     <link rel="icon" type="image/favicon.icon" href="{{ url_for('static', filename='favicon.ico') }}">
-
 </head>
 <body>
     <header>
         <h1>SmartCaixa - Fechamento</h1>
-        
     </header>
     <nav>
         <ul>
@@ -41,6 +39,17 @@
             <p><strong>Total Crédito:</strong> R$ {{ fechamento.total_credito }}</p>
             <p><strong>Total Dinheiro:</strong> R$ {{ fechamento.total_dinheiro }}</p>
             <p><strong>Usuário:</strong> {{ fechamento.usuario.usuario }}</p>
+            
+            <!-- Formulário para gerar relatório em PDF -->
+            <form method="post" action="{{ url_for('gerar_pdf_fechamento') }}">
+                <input type="hidden" name="abertura" value="{{ fechamento.abertura }}">
+                <input type="hidden" name="fechamento" value="{{ fechamento.fechamento }}">
+                <input type="hidden" name="total_pix" value="{{ fechamento.total_pix }}">
+                <input type="hidden" name="total_debito" value="{{ fechamento.total_debito }}">
+                <input type="hidden" name="total_credito" value="{{ fechamento.total_credito }}">
+                <input type="hidden" name="total_dinheiro" value="{{ fechamento.total_dinheiro }}">
+                <button type="submit">Gerar PDF do Fechamento</button>
+            </form>
         </div>
         {% endif %}
     </div>
