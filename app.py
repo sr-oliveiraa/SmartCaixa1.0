@@ -403,6 +403,7 @@ def gerar_pdf_fechamento():
 
     # Prepara o conteúdo do PDF
     dados = [
+        
         f"Data e Hora de Abertura: {abertura}",
         f"Data e Hora de Fechamento: {fechamento}",
         f"Total PIX: R$ {total_pix:.2f}",
