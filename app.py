@@ -241,33 +241,33 @@ def transacoes():
                            total_transacoes=total_transacoes,
                            limite=limite,
                            total=total)
+
+
 @app.route('/fechamento', methods=['GET', 'POST'])
 def fechamento():
     if 'usuario' not in session:
         return redirect(url_for('index'))
 
     if request.method == 'POST':
-        # Início do fechamento
         abertura = request.form.get('abertura')
         fechamento = datetime.now()
+        fundo_caixa = float(request.form.get('fundo_caixa', 0))
         usuario_id = Usuario.query.filter_by(usuario=session['usuario']).first().id
 
-        # Ajuste o formato da data de abertura
         try:
             abertura_datetime = datetime.strptime(abertura, '%Y-%m-%dT%H:%M')
         except ValueError:
             return "Formato de data e hora inválido. Use o formato 'YYYY-MM-DDTHH:MM'.", 400
 
-        # Criação do fechamento
         fechamento_caixa = FechamentoCaixa(
             abertura=abertura_datetime,
             fechamento=fechamento,
+            fundo_caixa=fundo_caixa,
             usuario_id=usuario_id
         )
         db.session.add(fechamento_caixa)
         db.session.commit()
 
-        # Calcular totais
         total_pix = db.session.query(db.func.sum(Transacao.valor)).filter(
             Transacao.metodo_pagamento == 'pix',
             Transacao.data >= abertura_datetime,
@@ -393,36 +393,32 @@ def gerar_pdf_fechamento():
     if 'usuario' not in session:
         return redirect(url_for('index'))
     
-    # Obtém dados do fechamento do formulário
     abertura = request.form.get('abertura')
     fechamento = request.form.get('fechamento')
     total_pix = float(request.form.get('total_pix', 0))
     total_debito = float(request.form.get('total_debito', 0))
     total_credito = float(request.form.get('total_credito', 0))
     total_dinheiro = float(request.form.get('total_dinheiro', 0))
+    fundo_caixa = float(request.form.get('fundo_caixa', 0))
 
-    # Prepara o conteúdo do PDF
     dados = [
-        
         f"Data e Hora de Abertura: {abertura}",
         f"Data e Hora de Fechamento: {fechamento}",
+        f"Fundo de Caixa: R$ {fundo_caixa:.2f}",
         f"Total PIX: R$ {total_pix:.2f}",
         f"Total Débito: R$ {total_debito:.2f}",
         f"Total Crédito: R$ {total_credito:.2f}",
         f"Total Dinheiro: R$ {total_dinheiro:.2f}",
     ]
 
-    # Gera o PDF e obtém o conteúdo em memória
     pdf_content = gerar_pdf(dados)
     
-    # Envia o PDF como resposta para download
     return send_file(
         pdf_content,
         as_attachment=True,
         download_name='relatorio_fechamento.pdf',
         mimetype='application/pdf'
     )
-
 
 from app import app  
 
