@@ -6,113 +6,207 @@
     <title>SmartCaixa - PDV</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="icon" type="image/favicon.icon" href="{{ url_for('static', filename='favicon.ico') }}">
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-        }
-        header {
-            background-color: #333;
-            color: #fff;
-            padding: 10px 20px;
-            text-align: center;
-        }
-        nav ul {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-            background-color: #444;
-        }
-        nav ul li {
-            display: inline;
-            margin-right: 10px;
-        }
-        nav ul li a {
-            color: #fff;
-            text-decoration: none;
-            padding: 10px;
-            display: inline-block;
-        }
-        nav ul li a:hover {
-            background-color: #555;
-        }
-        .pdv-container {
-            display: flex;
-            justify-content: space-between;
-            padding: 20px;
-        }
-        .busca-produto, .carrinho {
-            width: 48%;
-        }
-        .busca-produto input, .pagamento input {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-        }
-        .carrinho h2, .pagamento h2 {
-            background-color: #333;
-            color: #fff;
-            padding: 10px;
-            margin: 0;
-        }
-        .carrinho table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .carrinho table, .carrinho th, .carrinho td {
-            border: 1px solid #ddd;
-        }
-        .carrinho th, .carrinho td {
-            padding: 8px;
-            text-align: left;
-        }
-        .carrinho th {
-            background-color: #f2f2f2;
-        }
-        .carrinho button {
-            background-color: #f44336;
-            color: #fff;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-        }
-        .carrinho button:hover {
-            background-color: #d32f2f;
-        }
-        .pagamento {
-            margin-top: 20px;
-        }
-        .pagamento button {
-            background-color: #4CAF50;
-            color: #fff;
-            border: none;
-            padding: 10px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .pagamento button:hover {
-            background-color: #45a049;
-        }
-        #troco {
-            font-size: 18px;
-            margin-top: 10px;
-        }
-        .alert {
-            padding: 10px;
-            color: #fff;
-            margin-top: 20px;
-            border-radius: 5px;
-        }
-        .alert-success {
-            background-color: #4CAF50;
-        }
-        .alert-error {
-            background-color: #f44336;
-        }
-    </style>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+    }
+    
+    header {
+        background-color: #333;
+        color: #fff;
+        padding: 10px 20px;
+        text-align: center;
+    }
+    
+    nav ul {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+        background-color: #444;
+    }
+    
+    nav ul li {
+        display: inline;
+        margin-right: 10px;
+    }
+    
+    nav ul li a {
+        color: #fff;
+        text-decoration: none;
+        padding: 10px;
+        display: inline-block;
+    }
+    
+    nav ul li a:hover {
+        background-color: #555;
+    }
+    
+    .pdv-container {
+        display: flex;
+        justify-content: space-between;
+        padding: 20px;
+    }
+    
+    .busca-produto, .carrinho {
+        width: 48%;
+    }
+    
+    .busca-produto input, .pagamento input {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .carrinho h2, .pagamento h2 {
+        background-color: #333;
+        color: #fff;
+        padding: 10px;
+        margin: 0;
+    }
+    
+    .carrinho table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .carrinho table, .carrinho th, .carrinho td {
+        border: 1px solid #ddd;
+    }
+    
+    .carrinho th, .carrinho td {
+        padding: 8px;
+        text-align: left;
+    }
+    
+    .carrinho th {
+        background-color: #f2f2f2;
+    }
+    
+    .carrinho button {
+        background-color: #f44336;
+        color: #fff;
+        border: none;
+        padding: 5px 10px;
+        cursor: pointer;
+    }
+    
+    .carrinho button:hover {
+        background-color: #d32f2f;
+    }
+    
+    .pagamento {
+        margin-top: 20px;
+    }
+    
+    .payment-methods {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 20px;
+    }
+    
+    .payment-option {
+        display: flex;
+        align-items: center;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 10px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+        flex: 1 1 calc(50% - 20px);
+        box-sizing: border-box;
+    }
+    
+    .payment-option input[type="radio"] {
+        margin-right: 10px;
+    }
+    
+    .payment-option img {
+        width: 24px;
+        height: 24px;
+        margin-right: 10px;
+    }
+    
+    .payment-option:hover {
+        background-color: #f0f0f0;
+    }
+    
+    .payment-option input[type="radio"]:checked + img {
+        border: 2px solid #4CAF50;
+        border-radius: 50%;
+    }
+    
+    #valor-recebido {
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+    
+    #troco {
+        font-size: 18px;
+        margin-top: 10px;
+    }
+    
+    .pagamento button {
+        background-color: #4CAF50;
+        color: #fff;
+        border: none;
+        padding: 10px;
+        cursor: pointer;
+        font-size: 16px;
+        border-radius: 5px;
+    }
+    
+    .pagamento button:hover {
+        background-color: #45a049;
+    }
+    
+    .alert {
+        padding: 10px;
+        color: #fff;
+        margin-top: 20px;
+        border-radius: 5px;
+    }
+    
+    .alert-success {
+        background-color: #4CAF50;
+    }
+    
+    .alert-error {
+        background-color: #f44336;
+    }
+    
+    .icon {
+        width: 24px;
+        height: 24px;
+        vertical-align: middle;
+        margin-right: 8px;
+    }
+    
+    .payment-icons img {
+        width: 30px;
+        height: 30px;
+        margin: 0 5px;
+    }
+    
+    .loading {
+        display: none;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+    }
+    
+    .loading img {
+        width: 50px;
+    }
+</style>
+    </head>
     <script>
         let carrinho = [];
 
@@ -337,14 +431,14 @@ function showAlert(message, type) {
     <div class="pdv-container">
         <div class="busca-produto">
             
-
+            <h2><img src="{{ url_for('static', filename='search-icon.png') }}" class="icon" alt="Ícone de Pesquisa"> Buscar Produto</h2>
             <input type="text" id="busca" placeholder="Buscar produto por nome ou código de barras" oninput="buscarProduto()">
             <div id="search-results"></div>
             <!-- Adicione o campo de código de barras -->
 
         </div>
         <div class="carrinho">
-            <h2>Carrinho</h2>
+            <h2><img src="{{ url_for('static', filename='cart-icon.png') }}" class="icon" alt="Ícone de Carrinho"> Carrinho</h2>
             <table id="carrinho-table">
                 <thead>
                     <tr>
@@ -363,25 +457,37 @@ function showAlert(message, type) {
                 Total: R$ <span id="total">0.00</span>
             </div>
             <div class="pagamento">
-                <h2>Forma de Pagamento</h2>
-                <form id="form-pagamento">
-                    <label>
-                        <input type="radio" name="pagamento" value="debito" required> Débito
-                    </label>
-                    <label>
-                        <input type="radio" name="pagamento" value="credito" required> Crédito
-                    </label>
-                    <label>
-                        <input type="radio" name="pagamento" value="pix" required> PIX
-                    </label>
-                    <label>
-                        <input type="radio" name="pagamento" value="dinheiro" required> Dinheiro
-                    </label>
-                    <input type="number" id="valor-recebido" name="valor_recebido" placeholder="Valor Recebido" min="0" step="0.01">
-                    <div id="troco"></div>
-                    <button type="button" id="finalizar-compra">Confirmar Pagamento</button>
-                </form>
-            </div>
+    <h2><img src="{{ url_for('static', filename='payment-icon.png') }}" class="icon" alt="Ícone de Pagamento"> Pagamento</h2>
+    
+    <form id="form-pagamento">
+        <div class="payment-methods">
+            <label class="payment-option">
+                <input type="radio" name="pagamento" value="debito" required>
+                <img src="{{ url_for('static', filename='debit-icon.png') }}" alt="Débito">
+                Débito
+            </label>
+            <label class="payment-option">
+                <input type="radio" name="pagamento" value="credito" required>
+                <img src="{{ url_for('static', filename='credit-icon.png') }}" alt="Crédito">
+                Crédito
+            </label>
+            <label class="payment-option">
+                <input type="radio" name="pagamento" value="pix" required>
+                <img src="{{ url_for('static', filename='pix-icon.png') }}" alt="PIX">
+                PIX
+            </label>
+            <label class="payment-option">
+                <input type="radio" name="pagamento" value="dinheiro" required>
+                <img src="{{ url_for('static', filename='cash-icon.png') }}" alt="Dinheiro">
+                Dinheiro
+            </label>
+        </div>
+        <input type="number" id="valor-recebido" name="valor_recebido" placeholder="Valor Recebido" min="0" step="0.01">
+        <div id="troco"></div>
+        <button type="button" id="finalizar-compra">Confirmar Pagamento</button>
+    </form>
+</div>
+
         </div>
     </div>
 </body>

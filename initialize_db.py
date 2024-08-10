@@ -17,7 +17,8 @@ with app.app_context():
         admin = Usuario(
             usuario=admin_usuario,
             senha=generate_password_hash(admin_senha),
-            nivel_acesso="admin"
+            nivel_acesso="admin",
+            is_admin=True  # Define como True para administrador
         )
         db.session.add(admin)
         db.session.commit()
