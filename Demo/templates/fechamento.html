@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartCaixa - Fechamento</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styleFechamento.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <header>
+        <h1>SmartCaixa - Fechamento</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('pdv') }}">PDV</a></li>
+            <li><a href="{{ url_for('categorias') }}">Categorias</a></li>
+            <li><a href="{{ url_for('produtos') }}">Produtos</a></li>
+            <li><a href="{{ url_for('transacoes') }}">Transações</a></li>
+            <li><a href="{{ url_for('fechamento') }}">Fechamento</a></li>
+            <li><a href="{{ url_for('configuracoes') }}">Configurações</a></li>
+            <li><a href="{{ url_for('logout') }}">Sair</a></li>
+        </ul>
+    </nav>
+    <div class="fechamento-container">
+        <h2>Fechamento do Caixa</h2>
+        <form method="post" action="{{ url_for('fechamento') }}">
+            <label for="abertura">Data e Hora de Abertura:</label>
+            <input type="datetime-local" id="abertura" name="abertura" required>
+            <label for="fundo_caixa">Fundo de Caixa:</label>
+            <input type="number" step="0.01" id="fundo_caixa" name="fundo_caixa" required>
+            <button type="submit">Finalizar Fechamento</button>
+        </form>
+        
+        {% if fechamento %}
+        <div>
+            <h3>Resumo do Fechamento</h3>
+            <p><strong>Data e Hora de Abertura:</strong> {{ fechamento.abertura }}</p>
+            <p><strong>Data e Hora de Fechamento:</strong> {{ fechamento.fechamento }}</p>
+            <p><strong>Fundo de Caixa:</strong> R$ {{ fechamento.fundo_caixa }}</p>
+            <p><strong>Total PIX:</strong> R$ {{ fechamento.total_pix|default('0.00') }}</p>
+            <p><strong>Total Débito:</strong> R$ {{ fechamento.total_debito|default('0.00') }}</p>
+            <p><strong>Total Crédito:</strong> R$ {{ fechamento.total_credito|default('0.00') }}</p>
+            <p><strong>Total Dinheiro:</strong> R$ {{ fechamento.total_dinheiro|default('0.00') }}</p>
+            <p><strong>Usuário:</strong> {{ fechamento.usuario.usuario }}</p>
+            
+            <!-- Formulário para gerar relatório em PDF -->
+            <form method="post" action="{{ url_for('gerar_pdf_fechamento') }}">
+                <input type="hidden" name="abertura" value="{{ fechamento.abertura }}">
+                <input type="hidden" name="fechamento" value="{{ fechamento.fechamento }}">
+                <input type="hidden" name="total_pix" value="{{ fechamento.total_pix }}">
+                <input type="hidden" name="total_debito" value="{{ fechamento.total_debito }}">
+                <input type="hidden" name="total_credito" value="{{ fechamento.total_credito }}">
+                <input type="hidden" name="total_dinheiro" value="{{ fechamento.total_dinheiro }}">
+                <input type="hidden" name="fundo_caixa" value="{{ fechamento.fundo_caixa }}">
+                <button type="submit">Gerar Relatório em PDF</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

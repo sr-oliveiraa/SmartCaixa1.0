@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartCaixa - Configurações</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styleConfig.css') }}">
+    <link rel="icon" type="image/favicon.icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+</head>
+<body>
+    <header>
+        <h1>SmartCaixa - Configurações</h1>
+        
+    </header>
+    <nav>
+        <ul>
+            <li><a href="{{ url_for('pdv') }}">PDV</a></li>
+            <li><a href="{{ url_for('categorias') }}">Categorias</a></li>
+            <li><a href="{{ url_for('produtos') }}">Produtos</a></li>
+            <li><a href="{{ url_for('transacoes') }}">Transações</a></li>
+            <li><a href="{{ url_for('fechamento') }}">Fechamento</a></li>
+            <li><a href="{{ url_for('configuracoes') }}">Configurações</a></li>
+            <li><a href="{{ url_for('logout') }}">Sair</a></li>
+        </ul>
+    </nav>
+    
+    <div class="configuracoes-container">
+       
+        
+        {% if current_user.is_admin %}
+        <h2>Cadastro de Usuários</h2>
+        <form action="/add_usuario" method="post">
+            <label for="usuario">Usuário:</label>
+            <input type="text" id="usuario" name="usuario" required>
+            <label for="senha">Senha:</label>
+            <input type="password" id="senha" name="senha" required>
+            <label for="nivel_acesso">Nível de Acesso:</label>
+            <select id="nivel_acesso" name="nivel_acesso">
+                <option value="admin">Admin</option>
+                <option value="caixa">Caixa</option>
+            </select>
+            <button type="submit">Adicionar Usuário</button>
+        </form>
+        <h3>Usuários Cadastrados</h3>
+        <ul id="lista-usuarios">
+            <!-- Listagem de usuários -->
+        </ul>
+        {% endif %}
+    </div>
+</body>
+</html>
