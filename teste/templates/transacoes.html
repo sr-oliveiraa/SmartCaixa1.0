@@ -6,107 +6,9 @@
     <title>SmartCaixa - Transações</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style_transacoes.css') }}">
     <link rel="icon" type="image/favicon.icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
-    <style>
-        /* Estilização básica */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        header {
-            background-color: #333;
-            color: #fff;
-            padding: 10px;
-            text-align: center;
-        }
-
-        nav {
-            background-color: #f4f4f4;
-            padding: 10px;
-        }
-
-        nav ul {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        nav ul li {
-            display: inline;
-            margin-right: 10px;
-        }
-
-        nav ul li a {
-            text-decoration: none;
-            color: #333;
-        }
-
-        .transacoes-container {
-            padding: 20px;
-        }
-
-        .filter-form {
-            margin-bottom: 20px;
-        }
-
-        .filter-form label {
-            margin-right: 10px;
-        }
-
-        .total-sum {
-            font-size: 1.2em;
-            margin-bottom: 20px;
-            font-weight: bold;
-        }
-
-        #transacoes-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        #transacoes-table th, #transacoes-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-
-        #transacoes-table th {
-            background-color: #f4f4f4;
-        }
-
-        .pagination {
-            margin-top: 20px;
-            text-align: center;
-        }
-
-        .pagination a {
-            text-decoration: none;
-            color: #007bff;
-            margin: 0 5px;
-            padding: 8px 16px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-
-        .pagination a:hover {
-            background-color: #f4f4f4;
-        }
-
-        .pagination .disabled {
-            color: #aaa;
-            cursor: not-allowed;
-        }
-
-        .pagination span {
-            margin: 0 5px;
-            padding: 8px 16px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-    </style>
+    
 </head>
 <body>
     <header>
@@ -115,15 +17,16 @@
     </header>
     <nav>
         <ul>
-            <li><a href="{{ url_for('pdv') }}">PDV</a></li>
-            <li><a href="{{ url_for('categorias') }}">Categorias</a></li>
-            <li><a href="{{ url_for('produtos') }}">Produtos</a></li>
-            <li><a href="{{ url_for('transacoes') }}">Transações</a></li>
-            <li><a href="{{ url_for('fechamento') }}">Fechamento</a></li>
-            <li><a href="{{ url_for('configuracoes') }}">Configurações</a></li>
-            <li><a href="{{ url_for('logout') }}">Sair</a></li>
+            <li><a href="{{ url_for('pdv') }}"><i class="fas fa-cash-register"></i> PDV</a></li>
+            <li><a href="{{ url_for('categorias') }}"><i class="fas fa-th"></i> Categorias</a></li>
+            <li><a href="{{ url_for('produtos') }}"><i class="fas fa-box"></i> Produtos</a></li>
+            <li><a href="{{ url_for('transacoes') }}"><i class="fas fa-receipt"></i> Transações</a></li>
+            <li><a href="{{ url_for('fechamento') }}"><i class="fas fa-calendar-check"></i> Fechamento</a></li>
+            <li><a href="{{ url_for('configuracoes') }}"><i class="fas fa-cogs"></i> Configurações</a></li>
+            <li><a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Sair</a></li>
         </ul>
     </nav>
+    
     <div class="transacoes-container">
         <h2>Transações</h2>
         <form method="get" action="{{ url_for('transacoes') }}" class="filter-form">
@@ -180,6 +83,7 @@
         </div>
         {% endif %}
         <form method="post" action="{{ url_for('gerar_relatorio') }}">
+            <input type="hidden" name="filtro" value="{{ filtro }}">
             <button type="submit">Gerar Relatório</button>
         </form>
     </div>

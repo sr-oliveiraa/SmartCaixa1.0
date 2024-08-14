@@ -233,7 +233,7 @@ def edit_produto(produto_id):
 
 
 
-@app.route('/transacoes')
+@app.route('/transacoes', methods=['GET'])
 def transacoes():
     filtro = request.args.get('filtro', 'hoje')
     pagina = int(request.args.get('page', 1))
@@ -372,35 +372,30 @@ def delete_usuario():
 
 
 
-@app.route('/gerar_relatorio', methods=['GET'])
-@login_required
+@app.route('/gerar_relatorio', methods=['POST'])
 def gerar_relatorio():
     if 'usuario' not in session:
         return redirect(url_for('index'))
-
-    # Geração do relatório (exemplo com PDF usando o ReportLab)
-    buffer = io.BytesIO()
-
-    # Exemplo de geração de um PDF com ReportLab
-    from reportlab.lib.pagesizes import letter
-    from reportlab.pdfgen import canvas
-
-    c = canvas.Canvas(buffer, pagesize=letter)
-    width, height = letter
-
-    c.drawString(100, height - 100, "Relatório de Fechamento")
-    # Adicione mais conteúdo ao PDF
-
-    c.save()
-
-    buffer.seek(0)  # Voltar ao início do buffer para leitura
-
+    
+    # Obtém todas as transações
+    transacoes = Transacao.query.all()
+    
+    # Prepara o resumo das transações
+    total = sum(t.valor for t in transacoes)
+    
+    resumo = [f"{t.data} - {t.valor} - {t.metodo_pagamento}" for t in transacoes]
+    resumo.append(f"Total: {total}")
+    # Gera o PDF e obtém o conteúdo em memória
+    pdf_content = gerar_pdf(resumo)
+    
+    # Envia o PDF como resposta para download
     return send_file(
-        buffer,
+        pdf_content,
         as_attachment=True,
-        download_name="relatorio.pdf",
+        download_name='relatorio_transacoes.pdf',
         mimetype='application/pdf'
     )
+
 
 def gerar_pdf(dados):
     pdf = FPDF()
