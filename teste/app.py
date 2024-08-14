@@ -244,6 +244,7 @@ def transacoes():
 
 
 @app.route('/fechamento', methods=['GET', 'POST'])
+@login_required
 def fechamento():
     if 'usuario' not in session:
         return redirect(url_for('index'))
@@ -259,15 +260,10 @@ def fechamento():
         except ValueError:
             return "Formato de data e hora inválido. Use o formato 'YYYY-MM-DDTHH:MM'.", 400
 
-        fechamento_caixa = FechamentoCaixa(
-            abertura=abertura_datetime,
-            fechamento=fechamento,
-            fundo_caixa=fundo_caixa,
-            usuario_id=usuario_id
-        )
-        db.session.add(fechamento_caixa)
-        db.session.commit()
+        # Verifique se os dados de abertura e fechamento são corretos
+        print(f"Abertura: {abertura_datetime}, Fechamento: {fechamento}")
 
+        # Cálculo do total por método de pagamento
         total_pix = db.session.query(db.func.sum(Transacao.valor)).filter(
             Transacao.metodo_pagamento == 'pix',
             Transacao.data >= abertura_datetime,
@@ -292,16 +288,29 @@ def fechamento():
             Transacao.data <= fechamento
         ).scalar() or 0
 
-        fechamento_caixa.total_pix = total_pix
-        fechamento_caixa.total_debito = total_debito
-        fechamento_caixa.total_credito = total_credito
-        fechamento_caixa.total_dinheiro = total_dinheiro
+        total_vendas = total_pix + total_debito + total_credito + total_dinheiro
+        saldo_final = fundo_caixa + total_vendas
 
+        fechamento = FechamentoCaixa(
+            abertura=abertura_datetime,
+            fechamento=fechamento,
+            fundo_caixa=fundo_caixa,
+            total_pix=total_pix,
+            total_debito=total_debito,
+            total_credito=total_credito,
+            total_dinheiro=total_dinheiro,
+            total_vendas=total_vendas,
+            saldo_final=saldo_final,
+            usuario_id=usuario_id
+        )
+
+        db.session.add(fechamento)
         db.session.commit()
 
-        return render_template('fechamento.html', fechamento=fechamento_caixa)
+        return render_template('fechamento.html', fechamento=fechamento)
 
     return render_template('fechamento.html')
+
 
 @app.route('/configuracoes')
 def configuracoes():
@@ -337,25 +346,33 @@ def delete_usuario():
 
 
 
-@app.route('/gerar_relatorio', methods=['POST'])
+@app.route('/gerar_relatorio', methods=['GET'])
+@login_required
 def gerar_relatorio():
     if 'usuario' not in session:
         return redirect(url_for('index'))
-    
-    # Obtém todas as transações
-    transacoes = Transacao.query.all()
-    
-    # Prepara o resumo das transações
-    resumo = [f"{t.data} - {t.valor} - {t.metodo_pagamento}" for t in transacoes]
-    
-    # Gera o PDF e obtém o conteúdo em memória
-    pdf_content = gerar_pdf(resumo)
-    
-    # Envia o PDF como resposta para download
+
+    # Geração do relatório (exemplo com PDF usando o ReportLab)
+    buffer = io.BytesIO()
+
+    # Exemplo de geração de um PDF com ReportLab
+    from reportlab.lib.pagesizes import letter
+    from reportlab.pdfgen import canvas
+
+    c = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
+
+    c.drawString(100, height - 100, "Relatório de Fechamento")
+    # Adicione mais conteúdo ao PDF
+
+    c.save()
+
+    buffer.seek(0)  # Voltar ao início do buffer para leitura
+
     return send_file(
-        pdf_content,
+        buffer,
         as_attachment=True,
-        download_name='relatorio_transacoes.pdf',
+        download_name="relatorio.pdf",
         mimetype='application/pdf'
     )
 
@@ -387,39 +404,67 @@ def search_produto():
 
 
 
+
+
+
+
+from flask import send_file
+from fpdf import FPDF
+import io
+
+from flask import send_file
+from fpdf import FPDF
+import io
+
 @app.route('/gerar_pdf_fechamento', methods=['POST'])
 @login_required
 def gerar_pdf_fechamento():
     if 'usuario' not in session:
         return redirect(url_for('index'))
-    
-    abertura = request.form.get('abertura')
-    fechamento = request.form.get('fechamento')
-    total_pix = float(request.form.get('total_pix', 0))
-    total_debito = float(request.form.get('total_debito', 0))
-    total_credito = float(request.form.get('total_credito', 0))
-    total_dinheiro = float(request.form.get('total_dinheiro', 0))
-    fundo_caixa = float(request.form.get('fundo_caixa', 0))
 
-    dados = [
-        f"Data e Hora de Abertura: {abertura}",
-        f"Data e Hora de Fechamento: {fechamento}",
-        f"Fundo de Caixa: R$ {fundo_caixa:.2f}",
-        f"Total PIX: R$ {total_pix:.2f}",
-        f"Total Débito: R$ {total_debito:.2f}",
-        f"Total Crédito: R$ {total_credito:.2f}",
-        f"Total Dinheiro: R$ {total_dinheiro:.2f}",
-    ]
+    dados = {
+        'abertura': request.form.get('abertura'),
+        'fechamento': request.form.get('fechamento'),
+        'total_pix': request.form.get('total_pix'),
+        'total_debito': request.form.get('total_debito'),
+        'total_credito': request.form.get('total_credito'),
+        'total_dinheiro': request.form.get('total_dinheiro'),
+        'fundo_caixa': request.form.get('fundo_caixa'),
+        'total_vendas': request.form.get('total_vendas'),
+        'saldo_final': request.form.get('saldo_final')
+    }
 
-    pdf_content = gerar_pdf(dados)
-    
-    return send_file(
-        pdf_content,
-        as_attachment=True,
-        download_name='relatorio_fechamento.pdf',
-        mimetype='application/pdf'
-    )
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
 
+    pdf.cell(200, 10, txt="Relatório de Fechamento de Caixa", ln=True, align='C')
+    for key, value in dados.items():
+        pdf.cell(200, 10, txt=f"{key.replace('_', ' ').title()}: R$ {value}", ln=True, align='L')
+
+    # Criar um buffer em memória
+      # Salva o PDF em memória como string
+    pdf_output = io.BytesIO()
+    pdf_output.write(pdf.output(dest='S').encode('latin1'))  # 'S' para retornar como string
+    pdf_output.seek(0)  # Volta para o início do buffer
+    # Enviar o PDF como resposta
+    return send_file(output, as_attachment=True, download_name="relatorio_fechamento.pdf", mimetype="application/pdf")
+
+@app.route('/adicionar_observacao', methods=['POST'])
+@login_required
+def adicionar_observacao():
+    if 'usuario' not in session:
+        return redirect(url_for('index'))
+
+    observacao = request.form.get('observacoes')
+    fechamento_id = request.form.get('fechamento_id')
+
+    fechamento = FechamentoCaixa.query.get_or_404(fechamento_id)
+    fechamento.observacoes = observacao
+
+    db.session.commit()
+
+    return redirect(url_for('fechamento'))
 from app import app  
 
 if __name__ == "__main__":

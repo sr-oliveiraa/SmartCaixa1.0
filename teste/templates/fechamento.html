@@ -43,7 +43,11 @@
             <p><strong>Total Débito:</strong> R$ {{ fechamento.total_debito|default('0.00') }}</p>
             <p><strong>Total Crédito:</strong> R$ {{ fechamento.total_credito|default('0.00') }}</p>
             <p><strong>Total Dinheiro:</strong> R$ {{ fechamento.total_dinheiro|default('0.00') }}</p>
-            <p><strong>Usuário:</strong> {{ fechamento.usuario.usuario }}</p>
+            
+            <p><strong>Total de Vendas:</strong> R$ {{ fechamento.total_vendas|default('0.00') }}</p>
+            <p><strong>Saldo Final:</strong> R$ {{ fechamento.saldo_final|default('0.00') }}</p>
+            
+            
             
             <!-- Formulário para gerar relatório em PDF -->
             <form method="post" action="{{ url_for('gerar_pdf_fechamento') }}">
@@ -54,7 +58,17 @@
                 <input type="hidden" name="total_credito" value="{{ fechamento.total_credito }}">
                 <input type="hidden" name="total_dinheiro" value="{{ fechamento.total_dinheiro }}">
                 <input type="hidden" name="fundo_caixa" value="{{ fechamento.fundo_caixa }}">
+                <input type="hidden" name="total_vendas" value="{{ fechamento.total_vendas }}">
+                <input type="hidden" name="saldo_final" value="{{ fechamento.saldo_final }}">
                 <button type="submit">Gerar Relatório em PDF</button>
+            </form>
+            
+            <!-- Adicionar Observações -->
+            <h4>Observações</h4>
+            <form method="post" action="{{ url_for('adicionar_observacao') }}">
+                <textarea name="observacoes" rows="4" cols="50" placeholder="Adicione suas observações aqui..."></textarea>
+                <input type="hidden" name="fechamento_id" value="{{ fechamento.id }}">
+                <button type="submit">Adicionar Observação</button>
             </form>
         </div>
         {% endif %}

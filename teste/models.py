@@ -66,14 +66,18 @@ class ItemTransacao(db.Model):
 class FechamentoCaixa(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     abertura = db.Column(db.DateTime, nullable=False)
-    fechamento = db.Column(db.DateTime)
+    fechamento = db.Column(db.DateTime, nullable=False)
+    fundo_caixa = db.Column(db.Float, nullable=False)
     total_pix = db.Column(db.Float, default=0.0)
     total_debito = db.Column(db.Float, default=0.0)
     total_credito = db.Column(db.Float, default=0.0)
     total_dinheiro = db.Column(db.Float, default=0.0)
-    fundo_caixa = db.Column(db.Float, default=0.0)
+    total_vendas = db.Column(db.Float, default=0.0)
+    saldo_final = db.Column(db.Float, default=0.0)
+    observacoes = db.Column(db.Text, default='')
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
     usuario = db.relationship('Usuario', backref=db.backref('fechamentos', lazy=True))
+
 
 class Empresa(db.Model):
     id = db.Column(db.Integer, primary_key=True)
