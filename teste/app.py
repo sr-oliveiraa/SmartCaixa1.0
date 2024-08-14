@@ -9,6 +9,7 @@ from utils import gerar_pdf
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 import os
+from flask_migrate import Migrate
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///smartcaixa.db'
@@ -21,44 +22,66 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'index'
 
+migrate = Migrate(app, db)
+
 @login_manager.user_loader
 def load_user(user_id):
     return Usuario.query.get(int(user_id))
 
 @app.route('/')
 def index():
-    if 'usuario' in session:
+    if current_user.is_authenticated:
         return redirect(url_for('pdv'))
     return render_template('index.html')
 
-@app.route('/login', methods=['POST'])
+
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    usuario = request.form['usuario']
-    senha = request.form['senha']
-    user = Usuario.query.filter_by(usuario=usuario).first()
-    if user and check_password_hash(user.senha, senha):
-        login_user(user)
-        session['usuario'] = usuario
+    if current_user.is_authenticated:
         return redirect(url_for('pdv'))
-    return 'Usuário ou senha inválidos', 401
+
+    if request.method == 'POST':
+        usuario = request.form['usuario']
+        senha = request.form['senha']
+        user = Usuario.query.filter_by(usuario=usuario).first()
+        if user and check_password_hash(user.senha, senha):
+            login_user(user)
+            session['usuario'] = usuario
+            session['abertura'] = datetime.now().isoformat()  # Armazenar a hora de abertura
+            session['fechamento_realizado'] = False  # Inicialmente, o fechamento não foi realizado
+            return redirect(url_for('pdv'))
+        return 'Usuário ou senha inválidos', 401
+
+    return render_template('login.html')
+
 
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
     session.pop('usuario', None)
+    session.pop('fechamento_realizado', None)  # Remover a flag de fechamento
     return redirect(url_for('index'))
+
 
 @app.route('/pdv')
 @login_required
 def pdv():
+    if 'fechamento_realizado' in session and session['fechamento_realizado']:
+        # Se o fechamento foi realizado, redireciona para a tela de login
+        return redirect(url_for('logout'))
+    
+    # Se o fechamento não foi realizado, permite o acesso ao PDV
     return render_template('pdv.html')
+
+
+
 
 @app.route('/finalizar_compra', methods=['POST'])
 def finalizar_compra():
     if 'usuario' not in session:
         return redirect(url_for('index'))
-    
+
     dados = request.get_json()
     carrinho = dados.get('carrinho', [])
     pagamento = dados.get('pagamento')
@@ -102,7 +125,6 @@ def finalizar_compra():
     db.session.commit()
     return jsonify({'status': 'success', 'message': 'Compra finalizada com sucesso!'}), 200
     
-    
 
 @app.route('/categorias')
 def categorias():
@@ -131,33 +153,36 @@ def produtos():
 
 @app.route('/add_produto', methods=['POST'])
 def add_produto():
-    if 'usuario' not in session:
-        return redirect(url_for('index'))
-    nome_produto = request.form['nome_produto']
-    descricao_produto = request.form['descricao_produto']
+    nome = request.form['nome_produto']
+    descricao = request.form['descricao_produto']
     codigo_barras = request.form['codigo_barras']
-    preco_produto = request.form['preco_produto']
-    estoque_produto = request.form['estoque_produto']
-    categoria_id = request.form['categoria_id']
+    preco = float(request.form['preco_produto'])
+    estoque = int(request.form['estoque_produto'])
     
-    imagem_produto = request.files['imagem_produto']
-    imagem_path = None
-    if imagem_produto:
-        imagem_filename = secure_filename(imagem_produto.filename)
-        imagem_path = os.path.join(app.config['UPLOAD_FOLDER'], imagem_filename)
-        imagem_produto.save(imagem_path)
+    categoria_id = int(request.form['categoria_id'])
     
+    # Processa imagem se houver
+    imagem = None
+    if 'imagem_produto' in request.files:
+        imagem_file = request.files['imagem_produto']
+        if imagem_file.filename != '':
+            imagem = imagem_file.filename
+            imagem_file.save(f'static/imagens/{imagem}')
+
     novo_produto = Produto(
-        nome=nome_produto,
-        descricao=descricao_produto,
+        nome=nome,
+        descricao=descricao,
         codigo_barras=codigo_barras,
-        preco=preco_produto,
-        estoque=estoque_produto,
-        imagem=imagem_path,
-        categoria_id=categoria_id
+        preco=preco,
+        estoque=estoque,
+        
+        categoria_id=categoria_id,
+        imagem=imagem
     )
+    
     db.session.add(novo_produto)
     db.session.commit()
+    
     return redirect(url_for('produtos'))
 
 @app.route('/edit_produto/<int:produto_id>', methods=['POST'])
@@ -174,6 +199,7 @@ def edit_produto(produto_id):
     preco_produto = request.form.get('preco_produto')
     estoque_produto = request.form.get('estoque_produto')
     categoria_id = request.form.get('categoria_id')
+    
     
     # Verificando se os valores não são vazios
     if nome_produto:
@@ -250,41 +276,37 @@ def fechamento():
         return redirect(url_for('index'))
 
     if request.method == 'POST':
-        abertura = request.form.get('abertura')
+        abertura_str = session.get('abertura')  # Hora de abertura armazenada na sessão
+        if not abertura_str:
+            return "Hora de abertura não encontrada.", 400
+
+        abertura = datetime.fromisoformat(abertura_str)
         fechamento = datetime.now()
         fundo_caixa = float(request.form.get('fundo_caixa', 0))
         usuario_id = Usuario.query.filter_by(usuario=session['usuario']).first().id
 
-        try:
-            abertura_datetime = datetime.strptime(abertura, '%Y-%m-%dT%H:%M')
-        except ValueError:
-            return "Formato de data e hora inválido. Use o formato 'YYYY-MM-DDTHH:MM'.", 400
-
-        # Verifique se os dados de abertura e fechamento são corretos
-        print(f"Abertura: {abertura_datetime}, Fechamento: {fechamento}")
-
         # Cálculo do total por método de pagamento
         total_pix = db.session.query(db.func.sum(Transacao.valor)).filter(
             Transacao.metodo_pagamento == 'pix',
-            Transacao.data >= abertura_datetime,
+            Transacao.data >= abertura,
             Transacao.data <= fechamento
         ).scalar() or 0
 
         total_debito = db.session.query(db.func.sum(Transacao.valor)).filter(
             Transacao.metodo_pagamento == 'debito',
-            Transacao.data >= abertura_datetime,
+            Transacao.data >= abertura,
             Transacao.data <= fechamento
         ).scalar() or 0
 
         total_credito = db.session.query(db.func.sum(Transacao.valor)).filter(
             Transacao.metodo_pagamento == 'credito',
-            Transacao.data >= abertura_datetime,
+            Transacao.data >= abertura,
             Transacao.data <= fechamento
         ).scalar() or 0
 
         total_dinheiro = db.session.query(db.func.sum(Transacao.valor)).filter(
             Transacao.metodo_pagamento == 'dinheiro',
-            Transacao.data >= abertura_datetime,
+            Transacao.data >= abertura,
             Transacao.data <= fechamento
         ).scalar() or 0
 
@@ -292,7 +314,7 @@ def fechamento():
         saldo_final = fundo_caixa + total_vendas
 
         fechamento = FechamentoCaixa(
-            abertura=abertura_datetime,
+            abertura=abertura,
             fechamento=fechamento,
             fundo_caixa=fundo_caixa,
             total_pix=total_pix,
@@ -307,9 +329,13 @@ def fechamento():
         db.session.add(fechamento)
         db.session.commit()
 
+        session['fechamento_realizado'] = True
         return render_template('fechamento.html', fechamento=fechamento)
 
     return render_template('fechamento.html')
+
+
+
 
 
 @app.route('/configuracoes')
@@ -443,12 +469,17 @@ def gerar_pdf_fechamento():
         pdf.cell(200, 10, txt=f"{key.replace('_', ' ').title()}: R$ {value}", ln=True, align='L')
 
     # Criar um buffer em memória
-      # Salva o PDF em memória como string
     pdf_output = io.BytesIO()
     pdf_output.write(pdf.output(dest='S').encode('latin1'))  # 'S' para retornar como string
-    pdf_output.seek(0)  # Volta para o início do buffer
+    pdf_output.seek(0)  # Voltar para o início do buffer
+
     # Enviar o PDF como resposta
-    return send_file(output, as_attachment=True, download_name="relatorio_fechamento.pdf", mimetype="application/pdf")
+    return send_file(
+        pdf_output,
+        as_attachment=True,
+        download_name="relatorio_fechamento.pdf",
+        mimetype="application/pdf"
+    )
 
 @app.route('/adicionar_observacao', methods=['POST'])
 @login_required
