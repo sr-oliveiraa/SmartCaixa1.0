@@ -407,7 +407,15 @@ function showAlert(message, type) {
             }
         }
     });
-
+     // Adicionando opções de unidade de medida
+        const unidadeSelect = document.createElement('select');
+        unidadeSelect.innerHTML = `
+            <option value="gramas">Gramas</option>
+            <option value="quilos">Quilos</option>
+        `;
+        unidadeSelect.id = 'unidade';
+        unidadeSelect.name = 'unidade';
+        document.querySelector('.busca-produto').appendChild(unidadeSelect);
     </script>
 </head>
 <body>

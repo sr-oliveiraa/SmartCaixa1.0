@@ -1,6 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from datetime import datetime
+from sqlalchemy import Column, String
 
 db = SQLAlchemy()
 
@@ -29,6 +30,7 @@ class Produto(db.Model):
     estoque = db.Column(db.Integer, nullable=False)
     imagem = db.Column(db.String(100))
     categoria_id = db.Column(db.Integer, db.ForeignKey('categoria.id'), nullable=False)
+
 
     def atualizar_estoque(self, quantidade_vendida):
         if quantidade_vendida > self.estoque:
@@ -60,7 +62,7 @@ class ItemTransacao(db.Model):
     quantidade = db.Column(db.Integer, nullable=False)
     preco = db.Column(db.Float, nullable=False)
     transacao_id = db.Column(db.Integer, db.ForeignKey('transacao.id'), nullable=False)
-
+    
     produto = db.relationship('Produto', backref='itens_transacao')
 
 class FechamentoCaixa(db.Model):
